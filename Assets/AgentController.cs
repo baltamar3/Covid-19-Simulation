@@ -18,16 +18,13 @@ public class AgentController : MonoBehaviour
     // Start is called before the first frame update
     public AgentData data;
     NavMeshAgent myNavMeshAgent;
-    public GameObject[] points;
     private Image circle;
     int value = 0;
     void Start()
     {
-        points = GameObject.FindGameObjectsWithTag("Point");
         myNavMeshAgent = GetComponent<NavMeshAgent>();
-        value = Random.Range(0, points.Length);
-        data.r0 = Random.Range(2,4);
-        data.age = Random.Range(0,100);
+        value = Random.Range(0, SimulationController.points.Length);
+       
         foreach (Transform child in this.gameObject.transform)
         {
             if (child.name == "Area")
@@ -47,13 +44,14 @@ public class AgentController : MonoBehaviour
             {
                 data.state = "Recovered";
                 circle.color = GetColorRGBA("#2B7800");
-                // SimulationController1.recovered += 1;
+                SimulationController.recovered += 1;
+                SimulationController.sick -= 1;
             }
         }
-        myNavMeshAgent.SetDestination(points[value].transform.position);
-        float distanceToTarget = Vector3.Distance(transform.position, points[value].transform.position);
+        myNavMeshAgent.SetDestination(SimulationController.points[value].transform.position);
+        float distanceToTarget = Vector3.Distance(transform.position, SimulationController.points[value].transform.position);
         if (distanceToTarget <= 0.6f){
-            value = Random.Range(0, points.Length);
+            value = Random.Range(0, SimulationController.points.Length);
         }
     }
 
@@ -67,8 +65,8 @@ public class AgentController : MonoBehaviour
                 data.state = "Sick";
                 circle.color = GetColorRGBA("#730005");
                 agent.r0 -= 1;
-                // SimulationController1.sick += 1;
-                // SimulationController1.healthy -= 1;
+                SimulationController.sick += 1;
+                SimulationController.healthy -= 1;
             }
         }
     }
