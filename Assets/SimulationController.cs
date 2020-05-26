@@ -3,26 +3,37 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using SimpleJSON;
+using UnityEngine.AI;
 
 public class SimulationController : MonoBehaviour
 {
     // Start is called before the first frame update
     public static int healthy, recovered, sick, dead;
     public Text labelHealthy, labelRecovered, labelSick, labelDead, LabelTime;
+    public InputField agentsField, speedField, timeField;
     public static GameObject[] points;
     public GameObject[] agents;
     public static JSONNode items;
-    float totalTime = 0.0f;
+    public static float totalTime = 0f, time = 0f;
+    public static bool start = false;
+    public FreeFlyCamera camera;
 
     void Awake()
     {
         points = GameObject.FindGameObjectsWithTag("Point");
         ReadJson();
-        healthy = 109; //132
-        recovered = 0;
+    }
+
+    public void StartSimulation()
+    {
+        healthy = int.Parse(agentsField.text);
         sick = 1;
         dead = 0;
-        CreateAgents(109, "Healthy");
+        recovered = 0;
+        CreateAgents(healthy, "Healthy");
+        start = true;
+        camera.enabled = true;
+        totalTime = float.Parse(timeField.text) * 60.0f;
     }
 
     void CreateAgents(int cant, string state)
@@ -36,13 +47,17 @@ public class SimulationController : MonoBehaviour
             data.state = state;
             data.age = Random.Range(0, 100);
             data.r0 = Random.Range(2,4);
+            newAgent.GetComponent<NavMeshAgent>().speed = float.Parse(speedField.text);
         }
     }
 
     // Update is called once per frame
     void Update()
     {
-        Timer();
+        if (start && time <= totalTime)
+        {
+            Timer();
+        }
         labelHealthy.text = healthy.ToString();
         labelRecovered.text = recovered.ToString();
         labelSick.text = sick.ToString();
@@ -51,9 +66,9 @@ public class SimulationController : MonoBehaviour
 
     void Timer()
     {
-        totalTime += Time.deltaTime;
-        int minutes = Mathf.FloorToInt(totalTime / 60f);
-        int seconds = Mathf.FloorToInt(totalTime - (minutes * 60));
+        time += Time.deltaTime;
+        int minutes = Mathf.FloorToInt(time / 60f);
+        int seconds = Mathf.FloorToInt(time - (minutes * 60));
 
         string niceTime = string.Format("{0:0}:{01:00}", minutes, seconds);
         LabelTime.text = niceTime;
